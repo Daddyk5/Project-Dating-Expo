@@ -1,0 +1,9 @@
+.env
+queenxking-aca48-firebase-adminsdk-fbsvc-115eabe905.json
+firebase-debug.log
+.firebaserc
+.firebase.json
+firestore.indexes.json
+*migrations
+firestore.rules
+cors.json
