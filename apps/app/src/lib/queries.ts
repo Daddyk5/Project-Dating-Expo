@@ -15,6 +15,8 @@ export const keys = {
   me: ["me"] as const,
   discover: ["discover"] as const,
   nearby: ["nearby"] as const,
+  likes: ["likes"] as const,
+  blocks: ["blocks"] as const,
   matches: ["matches"] as const,
   messages: (matchId: string) => ["messages", matchId] as const,
   profile: (id: string) => ["profile", id] as const,
@@ -44,6 +46,10 @@ export function useSetMe() {
 
 export function useMatches() {
   return useQuery({ queryKey: keys.matches, queryFn: async () => (await api.matches()).matches });
+}
+
+export function useLikes() {
+  return useQuery({ queryKey: keys.likes, queryFn: async () => (await api.likes()).likes });
 }
 
 export function useMessages(matchId: string) {

@@ -10,6 +10,7 @@ import { errorHandler } from "./middleware/error";
 import {
   aiRouter,
   discoverRouter,
+  likesRouter,
   matchesRouter,
   meRouter,
   nearbyRouter,
@@ -41,6 +42,7 @@ export function createApp() {
   api.use("/nearby", nearbyRouter);
   api.use("/profiles", profilesRouter);
   api.use("/swipes", swipesRouter);
+  api.use("/likes", likesRouter);
   api.use("/matches", matchesRouter);
   api.use("/", safetyRouter); // /blocks, /reports
   api.use("/ai", aiRouter);

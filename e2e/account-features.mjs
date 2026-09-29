@@ -1,11 +1,8 @@
-// End-to-end (web): two real users sign up → onboard → find each other → match → chat.
-//
-// Needs the API (npm run dev:api), the Expo web dev server on :8081 (npm run dev:app),
-// Ollama for the AI features, and Chromium: npx playwright install chromium
-// Run: npm run e2e   (screenshots land in e2e/screenshots/)
-// The test deletes both accounts through the app at the end.
+// End-to-end (web): Likes you → like back, Blocked people, Change password,
+// Reset password link states, and the 404 page. Same prerequisites as signup-to-chat.mjs.
+// Run: npm run e2e:features   (both test accounts are deleted at the end, pass or fail)
 import { chromium } from "playwright";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { deflateSync, crc32 } from "node:zlib";
 
@@ -146,92 +143,91 @@ async function findAndLike(page, me, target) {
   throw new Error(`${me.name} never saw ${target.name} in Discover`);
 }
 
+
+const env = Object.fromEntries(readFileSync(new URL("../apps/app/.env", import.meta.url), "utf8").split(/\r?\n/).filter((l) => /^\w+=/.test(l)).map((l) => l.split(/=(.*)/s).slice(0, 2)));
+const AUTH = env.EXPO_PUBLIC_NEON_AUTH_URL.replace(/\/$/, ""), API = env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
+const call = (page, method, path, body) => page.evaluate(async ([AUTH, API, method, path, body]) => {
+  const { token } = await (await fetch(`${AUTH}/token`, { credentials: "include" })).json();
+  const r = await fetch(API + path, { method, headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) }, body: body ? JSON.stringify(body) : undefined });
+  return r.status === 204 ? null : r.json();
+}, [AUTH, API, method, path, body]);
+
 const browser = await chromium.launch();
+const made = [];
 try {
-  const b = await newUser(browser, B, { dark: true });
+  const b = await newUser(browser, B); made.push(b);
+  b.page.on("console", (m) => { if (m.type() === "error" && !/404|Failed to load resource/.test(m.text())) log("[B] CONSOLE", m.text().slice(0, 200)); });
   await signUpAndOnboard(b.page, B);
-  const a = await newUser(browser, A);
-  await signUpAndOnboard(a.page, A, { testUnderage: true });
+  const a = await newUser(browser, A, { dark: true }); made.push(a);
+  await signUpAndOnboard(a.page, A);
+  const bMe = await call(b.page, "GET", "/me");
+  log("A superlikes B:", JSON.stringify(await call(a.page, "POST", "/swipes", { targetId: bMe.id, action: "superlike" })));
 
-  // Discover: A finds Bianca and likes her (card preview first)
-  await findAndLike(a.page, A, B);
-  await a.page.waitForTimeout(1500); // let the AI compatibility line load
-  await snap(a.page, "discover-card-with-compat");
-  await a.page.keyboard.press("ArrowRight");
-  await a.page.waitForTimeout(1500);
-  log(`[${A.name}] liked ${B.name} (no match yet)`);
-
-  // Bianca finds Andre and likes him back → It's a Match!
-  await b.page.reload();
-  await b.page.getByRole("button", { name: "Like", exact: true }).waitFor();
-  await findAndLike(b.page, B, A);
-  await b.page.getByRole("button", { name: "Like", exact: true }).click();
+  // Likes banner on Matches → Likes you → like back → match
+  await b.page.goto(`${APP}/matches`);
+  await b.page.getByRole("button", { name: /(people like|person likes) you/ }).waitFor({ timeout: 20000 });
+  await snap(b.page, "matches-likes-banner");
+  await b.page.getByRole("button", { name: /(people like|person likes) you/ }).click();
+  await b.page.getByRole("button", { name: `Like ${A.name} back` }).waitFor({ timeout: 20000 });
+  await b.page.waitForTimeout(1000);
+  await snap(b.page, "likes-you");
+  await b.page.getByRole("button", { name: `Like ${A.name} back` }).click();
   await b.page.getByText("It’s a Match!").waitFor({ timeout: 20000 });
-  log(`[${B.name}] IT'S A MATCH`);
-  await b.page.waitForTimeout(800);
-  await snap(b.page, "its-a-match-dark");
+  log("[B] liked back from Likes you → IT'S A MATCH");
+  await b.page.goto(`${APP}/likes`);
+  await b.page.getByRole("button", { name: `Like ${A.name} back` }).waitFor({ state: "detached", timeout: 20000 });
+  log("[B] Andre is no longer in Likes you");
 
-  // Send a message → chat with AI icebreakers pre-filled
-  await b.page.getByRole("button", { name: "Send a message" }).click();
-  const t0 = Date.now();
-  const firstIdea = b.page.getByRole("button", { name: /^Use icebreaker:/ }).first();
-  await firstIdea.waitFor({ timeout: 90000 });
-  log(`[${B.name}] icebreakers loaded in ${Date.now() - t0} ms:`, await b.page.getByRole("button", { name: /^Use icebreaker:/ }).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label").replace("Use icebreaker: ", ""))));
-  await snap(b.page, "chat-icebreakers-dark");
-  await firstIdea.click();
-  const opener = await b.page.getByRole("textbox", { name: "Message", exact: true }).inputValue();
-  await b.page.getByRole("button", { name: "Send message" }).click();
-  log(`[${B.name}] sent: "${opener}"`);
+  // Blocked people: block via API, unblock in the UI
+  const aMe = await call(a.page, "GET", "/me");
+  await call(b.page, "POST", "/blocks", { userId: aMe.id });
+  await b.page.goto(`${APP}/settings`);
+  await b.page.getByRole("button", { name: /^Blocked people/ }).click();
+  await b.page.getByRole("button", { name: `Unblock ${A.name}` }).waitFor({ timeout: 20000 });
+  await snap(b.page, "blocked-people");
+  await b.page.getByRole("button", { name: `Unblock ${A.name}` }).click();
+  await b.page.getByText("You haven’t blocked anyone").waitFor({ timeout: 20000 });
+  log("[B] unblocked Andre from Blocked people");
 
-  // Andre: new match appears via socket; open the chat
-  await a.page.getByRole("tab", { name: /Matches/ }).or(a.page.getByRole("button", { name: /Matches/ })).first().click();
-  await a.page.getByRole("button", { name: new RegExp(`^Chat with ${B.name}`) }).click({ timeout: 30000 });
-  await a.page.getByText(opener).last().waitFor({ timeout: 20000 });
-  log(`[${A.name}] received the opener in the chat`);
-
-  // Read receipt: Bianca sees "Seen" once Andre opened the chat
-  await b.page.getByText("Seen", { exact: true }).waitFor({ timeout: 20000 });
-  log(`[${B.name}] read receipt shown ("Seen")`);
-
-  // Typing indicator: Andre types, Bianca sees "typing…"
-  await a.page.getByRole("textbox", { name: "Message", exact: true }).pressSequentially("Haha yes! ", { delay: 40 });
-  await b.page.getByText("typing…").waitFor({ timeout: 10000 });
-  log(`[${B.name}] sees typing indicator`);
-  await a.page.getByRole("textbox", { name: "Message", exact: true }).pressSequentially("Best dive spot I know is off Samal island. You?", { delay: 10 });
-  await a.page.getByRole("button", { name: "Send message" }).click();
-  await b.page.getByText("Best dive spot I know is off Samal island. You?").last().waitFor({ timeout: 20000 });
-  log(`[${B.name}] received reply in real time (no reload)`);
-
-  // Safety: a scam message is held behind a warning for the recipient
-  await b.page.getByRole("textbox", { name: "Message", exact: true }).fill("Can you send me 5000 pesos via GCash? My wallet got stolen, I'll pay you back");
-  await b.page.getByRole("button", { name: "Send message" }).click();
-  await a.page.getByText("This message may be unsafe").last().waitFor({ timeout: 30000 });
-  log(`[${A.name}] sees "This message may be unsafe" warning`);
-  await snap(a.page, "chat-unsafe-warning");
-  await snap(b.page, "chat-sender-view-dark");
-
-  // Desktop layout: sidebar with matches list ≥ 1024px
-  await a.page.setViewportSize({ width: 1280, height: 800 });
-  await a.page.goto(APP);
-  await a.page.getByRole("button", { name: "Like", exact: true }).waitFor({ timeout: 30000 });
-  await a.page.waitForTimeout(1500);
-  await snap(a.page, "desktop-discover-sidebar");
-  await a.page.getByRole("tab", { name: "Nearby" }).click();
+  // Change password (A, dark)
+  await a.page.goto(`${APP}/settings`);
+  await a.page.getByRole("button", { name: /^Change password/ }).click();
+  await a.page.getByLabel("Current password").fill("wrong-password-1");
+  await a.page.getByLabel("New password", { exact: true }).fill("New-pass-67890!");
+  await a.page.getByLabel("Confirm new password").fill("New-pass-67890!");
+  await a.page.getByRole("button", { name: "Change password", exact: true }).click();
   await a.page.waitForTimeout(2500);
-  await snap(a.page, "desktop-people-nearby");
+  log("[A] wrong current password →", (await a.page.getByRole("alert").allInnerTexts().catch(() => [])).join(" | ") || "(no alert role)");
+  await a.page.getByLabel("Current password").fill(PASSWORD);
+  await a.page.getByRole("button", { name: "Change password", exact: true }).click();
+  await a.page.getByText(/Password changed/).waitFor({ timeout: 20000 });
+  await snap(a.page, "change-password-dark");
+  log("[A] password changed");
 
-  // Delete account (app-store requirement) for both test users
-  for (const [u, s] of [[A, a], [B, b]]) {
-    await s.page.goto(`${APP}/settings`);
-    await s.page.getByRole("button", { name: /^Delete account/ }).click();
-    await s.page.getByRole("button", { name: "Create account" }).waitFor({ timeout: 30000 });
-    log(`[${u.name}] account deleted → back at welcome`);
-  }
-  log("E2E PASSED");
+  // Signed-out screens
+  const guest = await newUser(browser, { name: "guest", lat: 7, lng: 125 }); made.push(guest);
+  await guest.page.goto(`${APP}/reset-password`);
+  await guest.page.getByText("This link has expired").waitFor({ timeout: 20000 });
+  await snap(guest.page, "reset-password-no-token");
+  await guest.page.goto(`${APP}/reset-password?token=bogus-token`);
+  await guest.page.getByLabel("New password", { exact: true }).fill("Another-pass-1!");
+  await guest.page.getByLabel("Confirm new password").fill("Another-pass-1!");
+  await guest.page.getByRole("button", { name: "Update password" }).click();
+  await guest.page.getByText("This link has expired").waitFor({ timeout: 20000 });
+  await snap(guest.page, "reset-password-bad-token");
+  await guest.page.goto(`${APP}/this/does-not-exist`);
+  await guest.page.getByText("This page wandered off").waitFor({ timeout: 20000 });
+  await snap(guest.page, "not-found");
+  log("guest screens OK");
+  log("NEW SCREENS PASSED");
 } catch (e) {
-  log("E2E FAILED:", e.message);
+  log("FAILED:", e.message.split("\n")[0]);
   for (const [i, c] of browser.contexts().entries()) for (const p of c.pages()) await p.screenshot({ path: out(`fail-${i}.png`) }).catch(() => {});
   process.exitCode = 1;
 } finally {
+  for (const u of made.slice(0, 2)) {
+    const r = await call(u.page, "DELETE", "/me").then(() => "deleted", (e) => "DELETE FAILED " + e.message);
+    log("cleanup:", r);
+  }
   await browser.close();
 }

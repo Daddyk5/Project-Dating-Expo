@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Pressable, View } from "react-native";
 import type { PublicProfile } from "@kxq/shared";
 import { ProfileCard } from "@/components/profile-card";
-import { Chip, IconButton, Screen, Text } from "@/components/ui";
+import { Button, Chip, Header, Screen, Text } from "@/components/ui";
 import { useMe } from "@/lib/queries";
 import { spacing } from "@/theme";
 
@@ -16,18 +16,22 @@ export default function Preview() {
   const asPublic: PublicProfile = { ...me, photos: visiblePhotos, distanceKm: 2, isOnline: true };
 
   return (
-    <Screen scroll edges={["top", "bottom"]}>
-      <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: spacing.sm }}>
-        <IconButton icon="chevron-back" label="Back" onPress={() => router.back()} />
-        <Text variant="heading" accessibilityRole="header">
-          How others see you
-        </Text>
-      </View>
+    <Screen
+      scroll
+      edges={["top", "bottom"]}
+      header={
+        <Header
+          title="How others see you"
+          subtitle="Tap the card to flip through photos"
+          right={<Button title="Edit" size="sm" variant="secondary" onPress={() => router.push("/edit-profile")} />}
+        />
+      }
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Next photo"
         onPress={() => setPhoto((i) => (i + 1) % Math.max(1, visiblePhotos.length))}
-        style={{ aspectRatio: 3 / 4.4, width: "100%" }}
+        style={{ aspectRatio: 3 / 4.4, width: "100%", marginTop: spacing.sm, borderRadius: 24, boxShadow: "0px 16px 40px rgba(0,0,0,0.18)" }}
       >
         <ProfileCard profile={asPublic} photoIndex={photo} compat="You both love… (people see what you have in common here)" />
       </Pressable>

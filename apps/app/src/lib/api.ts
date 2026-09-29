@@ -1,4 +1,6 @@
 import type {
+  BlockedUser,
+  IncomingLike,
   MatchSummary,
   Message,
   MyProfile,
@@ -63,6 +65,7 @@ export const api = {
 
   swipe: (targetId: string, action: SwipeAction) => request<SwipeResult>("POST", "/swipes", { targetId, action }),
   undo: () => request<{ profile: PublicProfile }>("POST", "/swipes/undo"),
+  likes: (limit = 50) => request<{ likes: IncomingLike[] }>("GET", `/likes?limit=${limit}`),
 
   matches: () => request<{ matches: MatchSummary[] }>("GET", "/matches"),
   unmatch: (matchId: string) => request<void>("DELETE", `/matches/${matchId}`),
@@ -71,6 +74,8 @@ export const api = {
   markRead: (matchId: string) => request<{ updated: number }>("POST", `/matches/${matchId}/read`),
 
   block: (userId: string) => request<{ ok: true }>("POST", "/blocks", { userId }),
+  blocks: () => request<{ blocks: BlockedUser[] }>("GET", "/blocks"),
+  unblock: (userId: string) => request<void>("DELETE", `/blocks/${userId}`),
   report: (userId: string, reason: ReportReason, details?: string) =>
     request<{ id: string }>("POST", "/reports", { userId, reason, details }),
 

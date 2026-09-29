@@ -6,6 +6,7 @@
     "@expo/ui": "~57.0.20",
     "@expo/vector-icons": "^15.0.2",
     "@kxq/shared": "^1.0.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/slider": "5.2.0",
     "@tanstack/react-query": "^5.104.0",
     "eslint-config-expo": "~57.0.2",

@@ -1,5 +1,4 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Image } from "expo-image";
 import { router, usePathname } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import type { MatchSummary } from "@kxq/shared";
@@ -7,12 +6,14 @@ import { useAuth } from "@/lib/auth";
 import { timeAgo } from "@/lib/device";
 import { useMatches } from "@/lib/queries";
 import { radii, spacing, TOUCH, useTheme } from "@/theme";
-import { DemoBadge, EmptyState, OnlineDot, Skeleton, Text } from "./ui";
+import { Avatar, DemoBadge, EmptyState, Skeleton, Text } from "./ui";
 
 const openChat = (m: MatchSummary) => router.push(`/chat/${m.id}`);
 
+export type MatchFilter = "all" | "unread" | "new";
+
 /** New-matches row + conversations list. Used by the Matches tab and the desktop sidebar. */
-export function MatchesList({ compact }: { compact?: boolean }) {
+export function MatchesList({ compact, filter = "all", query = "" }: { compact?: boolean; filter?: MatchFilter; query?: string }) {
   const { data, isLoading } = useMatches();
   const { user } = useAuth();
   const pathname = usePathname();
@@ -30,14 +31,31 @@ export function MatchesList({ compact }: { compact?: boolean }) {
     );
   }
 
-  const fresh = data.filter((m) => !m.lastMessage);
-  const conversations = data.filter((m) => m.lastMessage);
+  const q = query.trim().toLowerCase();
+  const visible = data.filter(
+    (m) =>
+      (!q || m.other.displayName.toLowerCase().includes(q)) &&
+      (filter === "all" || (filter === "unread" ? m.unreadCount > 0 : !m.lastMessage)),
+  );
+  if (!visible.length) {
+    return (
+      <EmptyState
+        icon={q ? "search-outline" : filter === "unread" ? "checkmark-done-outline" : "sparkles-outline"}
+        title={q ? "No matches found" : filter === "unread" ? "You're all caught up" : "No new matches"}
+        message={q ? `Nobody named “${query.trim()}” in your matches.` : filter === "unread" ? "No unread messages right now." : "Everyone you've matched with already has a conversation going."}
+      />
+    );
+  }
+  const fresh = visible.filter((m) => !m.lastMessage);
+  const conversations = visible.filter((m) => m.lastMessage);
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
       {fresh.length > 0 && (
         <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
-          <Text variant="bodyBold">New matches</Text>
+          <Text variant="overline" muted>
+            New matches · {fresh.length}
+          </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md }}>
             {fresh.map((m) => (
               <Pressable
@@ -45,20 +63,9 @@ export function MatchesList({ compact }: { compact?: boolean }) {
                 accessibilityRole="button"
                 accessibilityLabel={`New match with ${m.other.displayName}. Say hi`}
                 onPress={() => openChat(m)}
-                style={{ alignItems: "center", width: 76, gap: 4 }}
+                style={{ alignItems: "center", width: 76, gap: 6 }}
               >
-                <View>
-                  <Image
-                    source={{ uri: m.other.photos[0]?.url }}
-                    style={[styles.newAvatar, { borderColor: colors.primary }]}
-                    contentFit="cover"
-                  />
-                  {m.other.isOnline && (
-                    <View style={styles.dot}>
-                      <OnlineDot />
-                    </View>
-                  )}
-                </View>
+                <Avatar uri={m.other.photos[0]?.url} size={64} ring online={m.other.isOnline} />
                 <Text variant="caption" numberOfLines={1}>
                   {m.other.displayName}
                 </Text>
@@ -68,7 +75,11 @@ export function MatchesList({ compact }: { compact?: boolean }) {
         </View>
       )}
 
-      {conversations.length > 0 && <Text variant="bodyBold" style={{ marginBottom: spacing.sm }}>Messages</Text>}
+      {conversations.length > 0 && (
+        <Text variant="overline" muted style={{ marginBottom: spacing.sm }}>
+          Messages
+        </Text>
+      )}
       {conversations.map((m) => {
         const last = m.lastMessage!;
         const mine = last.senderId === user?.id;
@@ -82,17 +93,10 @@ export function MatchesList({ compact }: { compact?: boolean }) {
             onPress={() => openChat(m)}
             style={({ pressed }) => [
               styles.row,
-              { backgroundColor: active ? colors.surface : pressed ? colors.surface : "transparent" },
+              { backgroundColor: active ? colors.primarySoft : pressed ? colors.surface : "transparent" },
             ]}
           >
-            <View>
-              <Image source={{ uri: m.other.photos[0]?.url }} style={styles.avatar} contentFit="cover" />
-              {m.other.isOnline && (
-                <View style={styles.dot}>
-                  <OnlineDot />
-                </View>
-              )}
-            </View>
+            <Avatar uri={m.other.photos[0]?.url} size={56} online={m.other.isOnline} />
             <View style={{ flex: 1, gap: 2 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
                 <Text variant="bodyBold" numberOfLines={1} style={{ flexShrink: 1 }}>
@@ -156,9 +160,6 @@ export function MatchesSkeleton() {
 }
 
 const styles = StyleSheet.create({
-  newAvatar: { width: 68, height: 68, borderRadius: 34, borderWidth: 2 },
-  avatar: { width: 56, height: 56, borderRadius: 28 },
-  dot: { position: "absolute", right: 2, bottom: 2 },
   row: { flexDirection: "row", alignItems: "center", gap: spacing.md, minHeight: TOUCH + 20, paddingVertical: spacing.sm, paddingHorizontal: spacing.sm, borderRadius: radii.md },
   unread: { minWidth: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 },
   hint: { flexDirection: "row", gap: spacing.sm, alignItems: "center", paddingTop: spacing.md },

@@ -1,7 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { View } from "react-native";
-import { IconButton, Screen, Text, type IconName } from "@/components/ui";
+import { Linking, Platform, StyleSheet, View } from "react-native";
+import { Button, Card, Header, Screen, Text, type IconName } from "@/components/ui";
 import { radii, spacing, useTheme } from "@/theme";
 
 const TIPS: { icon: IconName; title: string; body: string }[] = [
@@ -15,27 +16,53 @@ const TIPS: { icon: IconName; title: string; body: string }[] = [
 export default function Safety() {
   const { colors } = useTheme();
   return (
-    <Screen scroll edges={["top", "bottom"]}>
-      <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: spacing.sm }}>
-        <IconButton icon="chevron-back" label="Back" onPress={() => router.back()} />
-        <Text variant="heading" accessibilityRole="header">
-          Safety center
+    <Screen scroll edges={["top", "bottom"]} header={<Header title="Safety center" />}>
+      <View style={[styles.hero, { boxShadow: colors.shadowStrong }]}>
+        <LinearGradient colors={["#15803D", "#0F5132"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+        <Ionicons name="shield-checkmark" size={36} color="#FFFFFF" />
+        <Text variant="title" style={{ color: "#FFFFFF" }}>
+          Your safety comes first
+        </Text>
+        <Text style={{ color: "rgba(255,255,255,0.88)" }}>
+          Every message is screened for scams, harassment and explicit content, and every report is reviewed.
         </Text>
       </View>
+
+      <Text variant="overline" muted style={{ marginTop: spacing.xl, marginBottom: spacing.sm, paddingHorizontal: spacing.xs }}>
+        Dating safely
+      </Text>
       <View style={{ gap: spacing.md }}>
-        {TIPS.map((t) => (
-          <View key={t.title} style={{ flexDirection: "row", gap: spacing.md, backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing.lg }}>
-            <Ionicons name={t.icon} size={24} color={colors.primary} />
+        {TIPS.map((t, i) => (
+          <Card key={t.title} style={{ flexDirection: "row", gap: spacing.md }}>
+            <View style={[styles.num, { backgroundColor: colors.primarySoft }]}>
+              <Ionicons name={t.icon} size={20} color={colors.primary} />
+            </View>
             <View style={{ flex: 1, gap: spacing.xs }}>
-              <Text variant="bodyBold">{t.title}</Text>
+              <Text variant="bodyBold">
+                {i + 1}. {t.title}
+              </Text>
               <Text muted>{t.body}</Text>
             </View>
-          </View>
+          </Card>
         ))}
-        <Text variant="small" muted>
-          In immediate danger? Call 911 (Philippines emergency hotline).
-        </Text>
       </View>
+
+      <Card style={{ marginTop: spacing.xl, gap: spacing.md, borderColor: colors.danger }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
+          <Ionicons name="call" size={20} color={colors.danger} />
+          <Text variant="heading">In immediate danger?</Text>
+        </View>
+        <Text muted>Call 911, the Philippines national emergency hotline.</Text>
+        {Platform.OS !== "web" && <Button title="Call 911" variant="danger" icon="call-outline" onPress={() => Linking.openURL("tel:911")} />}
+      </Card>
+
+      <Button title="Manage blocked people" variant="secondary" icon="ban-outline" onPress={() => router.push("/blocked")} style={{ marginTop: spacing.xl }} />
+      <Button title="Read the Help & FAQ" variant="ghost" icon="help-buoy-outline" onPress={() => router.push("/help")} style={{ marginTop: spacing.md }} />
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  hero: { borderRadius: radii.xl, padding: spacing.xl, gap: spacing.sm, overflow: "hidden", marginTop: spacing.sm },
+  num: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+});

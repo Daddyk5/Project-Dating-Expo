@@ -59,6 +59,31 @@ export async function getToken(force = false): Promise<string | null> {
   return inflight;
 }
 
+/**
+ * Email a password-reset link. Better Auth ≥1.3 calls it /request-password-reset;
+ * older versions use /forget-password. Needs email delivery configured in Neon Auth.
+ */
+export async function requestPasswordReset(email: string) {
+  const body = JSON.stringify({ email, redirectTo: Platform.OS === "web" ? `${window.location.origin}/reset-password` : undefined });
+  try {
+    await call("/request-password-reset", { method: "POST", body });
+  } catch (e) {
+    if (!(e instanceof AuthError) || !/404|not found/i.test(e.message)) throw e;
+    await call("/forget-password", { method: "POST", body });
+  }
+}
+
+/** Set a new password with the token from the reset email link. */
+export async function resetPassword(token: string, newPassword: string) {
+  await call("/reset-password", { method: "POST", body: JSON.stringify({ token, newPassword }) });
+}
+
+/** Change the password while signed in; other devices are signed out. */
+export async function changePassword(currentPassword: string, newPassword: string) {
+  await call("/change-password", { method: "POST", body: JSON.stringify({ currentPassword, newPassword, revokeOtherSessions: true }) });
+  cachedToken = null;
+}
+
 interface AuthState {
   status: "loading" | "signedIn" | "signedOut";
   user: AuthUser | null;

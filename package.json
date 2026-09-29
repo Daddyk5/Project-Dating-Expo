@@ -7,6 +7,10 @@
     "packages/*"
   ],
   "scripts": {
+    "start": "npm run start -w @kxq/app",
+    "web": "npm run web -w @kxq/app",
+    "android": "npm run android -w @kxq/app",
+    "ios": "npm run ios -w @kxq/app",
     "dev:api": "npm run dev -w @kxq/api",
     "dev:app": "npm run web -w @kxq/app",
     "db:check": "npm run db:check -w @kxq/api",
@@ -17,7 +21,8 @@
     "test": "npm run test -w @kxq/api",
     "lint": "eslint .",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "e2e": "node e2e/signup-to-chat.mjs"
+    "e2e": "node e2e/signup-to-chat.mjs",
+    "e2e:features": "node e2e/account-features.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
