@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KingxQueen Demo</title>
+<meta name="description" content="Click through the KingxQueen dating app: real screenshots from the Expo app, wired up like a prototype.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf7fb; --surface: #ffffff; --text: #16121c; --muted: #6a6275; --border: #ebe4ef;
+    --rose: #d81b60; --plum: #7b1fa2; --gold: #f5b82e; --hot: rgba(216, 27, 96, .28);
+    --grad: linear-gradient(135deg, #d81b60, #7b1fa2);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0e0a13; --surface: #1a1422; --text: #f4f0f7; --muted: #a79db3; --border: #2c2336; --hot: rgba(236, 64, 122, .35); }
+  }
+  :root[data-theme="dark"] { --bg: #0e0a13; --surface: #1a1422; --text: #f4f0f7; --muted: #a79db3; --border: #2c2336; --hot: rgba(236, 64, 122, .35); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--rose); }
+  header { padding: 28px 16px 8px; text-align: center; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; letter-spacing: -.3px; }
+  .brand .mark { width: 34px; height: 34px; border-radius: 11px; background: var(--grad); display: grid; place-items: center; color: #fff; font-size: 18px; }
+  .brand b { color: var(--rose); }
+  header p { margin: 6px auto 0; color: var(--muted); max-width: 560px; }
+  main { display: grid; grid-template-columns: 260px auto 300px; gap: 40px; justify-content: center; align-items: start; padding: 24px 16px 56px; }
+  nav h2, aside h2 { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin: 18px 0 6px; }
+  nav h2:first-child { margin-top: 0; }
+  nav button { display: flex; width: 100%; align-items: center; gap: 10px; border: 0; background: none; color: var(--text); font: inherit; text-align: left; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+  nav button:hover { background: var(--surface); }
+  nav button[aria-current="true"] { background: var(--surface); color: var(--rose); font-weight: 600; box-shadow: 0 1px 0 var(--border) inset, 0 0 0 1px var(--border); }
+  nav .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; background: var(--border); color: var(--muted); flex: none; }
+  nav button[aria-current="true"] .n { background: var(--rose); color: #fff; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .phone { position: relative; width: 360px; aspect-ratio: 780 / 1688; border-radius: 52px; padding: 11px; background: #121017; box-shadow: 0 30px 80px rgba(60, 10, 60, .35), 0 0 0 1px rgba(255,255,255,.06) inset; }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 42px; overflow: hidden; background: #fff; cursor: pointer; }
+  .screen img { width: 100%; height: 100%; display: block; object-fit: cover; transition: opacity .18s ease; }
+  .screen img.fade { opacity: 0; }
+  .hot { position: absolute; border: 0; padding: 0; background: transparent; border-radius: 14px; cursor: pointer; }
+  .hot:focus-visible { outline: 3px solid var(--rose); outline-offset: 2px; }
+  .show-hot .hot, .hint .hot { background: var(--hot); box-shadow: 0 0 0 2px var(--rose); }
+  .hint .hot { animation: pulse .9s ease 2; }
+  @keyframes pulse { 50% { transform: scale(1.04); opacity: .6; } }
+  .caption { text-align: center; min-height: 72px; max-width: 360px; }
+  .caption h1 { font-size: 22px; margin: 0; letter-spacing: -.3px; }
+  .caption p { margin: 2px 0 0; color: var(--muted); }
+  .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); font: 600 14px Inter, system-ui, sans-serif; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+  .btn:hover { border-color: var(--rose); }
+  .btn.primary { background: var(--grad); color: #fff; border: 0; }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; cursor: pointer; }
+  aside .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px; }
+  aside ul { margin: 8px 0 0; padding-left: 18px; }
+  aside li { margin: 4px 0; }
+  aside .tip { color: var(--muted); font-size: 13px; margin-top: 14px; }
+  kbd { font: 600 12px Inter, sans-serif; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; background: var(--bg); }
+  .desk { max-width: 1100px; margin: 0 auto; padding: 0 16px 64px; }
+  .desk h2 { text-align: center; font-size: 22px; margin: 0 0 4px; }
+  .desk > p { text-align: center; color: var(--muted); margin: 0 0 20px; }
+  .desk img { width: 100%; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(60, 10, 60, .18); display: block; }
+  .desk .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 16px 40px; }
+  @media (max-width: 1100px) {
+    main { grid-template-columns: 1fr; justify-items: center; gap: 24px; }
+    nav { order: 2; width: 100%; max-width: 420px; }
+    aside { order: 3; width: 100%; max-width: 420px; }
+  }
+  @media (max-width: 420px) {
+    .phone { width: calc(100vw - 48px); border-radius: 44px; }
+    .screen { border-radius: 35px; }
+    .desk .pair { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="mark">♥</span>King<b>x</b>Queen</div>
+  <p>A clickable walkthrough of the app. Every screen is a real screenshot from the Expo web build. Tap the buttons on the phone, just like the real thing.</p>
+</header>
+
+<main>
+  <nav id="nav" aria-label="Screens"></nav>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="screen" id="screen" role="group" aria-roledescription="app screen">
+        <img id="shot" alt="">
+      </div>
+    </div>
+    <div class="caption" aria-live="polite"><h1 id="title"></h1><p id="desc"></p></div>
+    <div class="controls">
+      <button class="btn" id="prev" aria-label="Previous screen">← Back</button>
+      <button class="btn primary" id="play">▶ Autoplay</button>
+      <button class="btn" id="next" aria-label="Next screen">Next →</button>
+    </div>
+    <label class="toggle"><input type="checkbox" id="showHot"> Highlight tappable areas</label>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h2 style="margin-top:0">Try this path</h2>
+      <ul>
+        <li>Welcome → <em>Create account</em></li>
+        <li>Discover → tap the <em>ⓘ</em> or the <em>♥</em></li>
+        <li>It’s a Match → <em>Send a message</em></li>
+        <li>Pick an AI icebreaker, then hit send</li>
+        <li>Matches → tap the <em>“people like you”</em> banner</li>
+      </ul>
+      <p class="tip">Tap anywhere else on the phone to see what’s tappable. Keyboard: <kbd>←</kbd> <kbd>→</kbd> to step, <kbd>Space</kbd> to autoplay.</p>
+    </div>
+  </aside>
+</main>
+
+<section class="desk">
+  <h2>Also on desktop</h2>
+  <p>On wide screens the web app switches to a sidebar with your conversations.</p>
+  <div class="pair">
+    <img src="../screenshots/desktop-discover.png" alt="Desktop web: Discover with the sidebar and messages list" loading="lazy">
+    <img src="../screenshots/desktop-nearby.png" alt="Desktop web: Nearby grid" loading="lazy">
+  </div>
+</section>
+
+<footer>Profiles shown are fictional demo accounts with illustrated DiceBear avatars. · <a href="../../README.md">Back to the README</a></footer>
+
+<script>
+// Hotspots are in screenshot pixels (780 × 1688): [x1, y1, x2, y2, target, label].
+const TABS = [
+  [0, 1566, 195, 1688, "discover", "Discover tab"],
+  [195, 1566, 390, 1688, "nearby", "Nearby tab"],
+  [390, 1566, 585, 1688, "matches", "Matches tab"],
+  [585, 1566, 780, 1688, "profile", "Profile tab"],
+];
+const BACK = (to) => [28, 20, 124, 100, to, "Back"];
+const SCREENS = [
+  { id: "welcome", group: "Get started", title: "Welcome", desc: "Dating, done with intention.",
+    hot: [[32, 1152, 748, 1256, "sign-up", "Create account"], [32, 1280, 748, 1384, "sign-in", "I already have an account"]] },
+  { id: "sign-in", group: "Get started", title: "Sign in", desc: "Email and password, with a reset link if you forget.", hot: [BACK("welcome")] },
+  { id: "sign-up", group: "Get started", title: "Create account", desc: "Live password-strength meter and an 18+ confirmation.", hot: [], next: "onboarding-photos" },
+  { id: "onboarding-photos", group: "Get started", title: "Add your photos", desc: "Uploaded straight to private object storage.", hot: [], next: "onboarding-interests" },
+  { id: "onboarding-interests", group: "Get started", title: "Pick your interests", desc: "They power matching and the AI features.", hot: [], next: "discover" },
+
+  { id: "discover", group: "Meet people", title: "Discover", desc: "Swipe, tap or use the keyboard. The AI line says what you have in common.",
+    hot: [[470, 1356, 596, 1486, "its-a-match", "Like"], [620, 1372, 718, 1470, "profile-detail", "View full profile"], [32, 112, 748, 1330, "profile-detail", "Open card"], ...TABS] },
+  { id: "profile-detail", group: "Meet people", title: "Full profile", desc: "Photos, bio, interests, distance and the compatibility summary.", hot: [[656, 12, 752, 108, "discover", "Close"]] },
+  { id: "nearby", group: "Meet people", title: "Nearby", desc: "Everyone around you, closest first, with online-now dots.", hot: [[32, 186, 382, 652, "profile-detail", "Marco"], ...TABS] },
+  { id: "likes-you", group: "Meet people", title: "Likes you", desc: "People who already liked you. Super likes come first.", hot: [[220, 612, 308, 698, "its-a-match", "Like Marco back"], BACK("matches")] },
+  { id: "its-a-match", group: "Meet people", title: "It’s a Match!", desc: "You both liked each other.",
+    hot: [[48, 1234, 732, 1338, "chat-icebreakers", "Send a message"], [48, 1362, 732, 1466, "discover", "Keep swiping"]] },
+
+  { id: "chat-icebreakers", group: "Chat", title: "AI icebreakers", desc: "Openers written from what you both like. Edit before sending.", hot: [[32, 1376, 552, 1508, "chat", "Use icebreaker"], BACK("matches")] },
+  { id: "chat", group: "Chat", title: "Real-time chat", desc: "Live delivery, typing indicators and read receipts.", hot: [[660, 1584, 748, 1672, "chat-safety-warning", "Send"], BACK("matches")] },
+  { id: "chat-safety-warning", group: "Chat", title: "Safety warning", desc: "Scams, harassment and explicit content are held behind a warning.", hot: [BACK("matches")] },
+  { id: "chat-dark", group: "Chat", title: "Dark mode", desc: "Every screen follows the system theme.", hot: [BACK("matches")] },
+  { id: "matches", group: "Chat", title: "Matches", desc: "Search, filter by unread or new, and see who likes you.",
+    hot: [[32, 178, 748, 314, "likes-you", "People like you"], [32, 670, 748, 806, "chat", "Chat with Marco"], ...TABS] },
+
+  { id: "profile", group: "You", title: "Your profile", desc: "Profile strength with the next best step.",
+    hot: [[668, 28, 748, 108, "settings", "Settings"], [32, 1474, 748, 1560, "premium", "KingxQueen Royal"], ...TABS] },
+  { id: "settings", group: "You", title: "Settings", desc: "Theme, notifications, password, blocked people and account.", hot: [BACK("profile")] },
+  { id: "premium", group: "You", title: "KingxQueen Royal", desc: "The planned membership. Join the waitlist.", hot: [[640, 20, 760, 130, "profile", "Close"]] },
+  { id: "safety", group: "You", title: "Safety center", desc: "How to date safely, and what to do if something feels off.", hot: [BACK("profile")] },
+];
+const byId = Object.fromEntries(SCREENS.map((s) => [s.id, s]));
+const $ = (id) => document.getElementById(id);
+let current = 0, timer = null;
+
+// Screen list, grouped.
+let lastGroup = "";
+SCREENS.forEach((s, i) => {
+  if (s.group !== lastGroup) {
+    const h = document.createElement("h2");
+    h.textContent = lastGroup = s.group;
+    $("nav").append(h);
+  }
+  const b = document.createElement("button");
+  b.innerHTML = `<span class="n">${i + 1}</span>${s.title}`;
+  b.onclick = () => { stop(); show(i); };
+  s.navButton = b;
+  $("nav").append(b);
+});
+SCREENS.forEach((s) => { const img = new Image(); img.src = `../screenshots/${s.id}.png`; });
+
+function show(i) {
+  current = (i + SCREENS.length) % SCREENS.length;
+  const s = SCREENS[current];
+  const img = $("shot");
+  img.classList.add("fade");
+  setTimeout(() => {
+    img.src = `../screenshots/${s.id}.png`;
+    img.alt = `${s.title} screen`;
+    img.classList.remove("fade");
+  }, 120);
+  $("screen").querySelectorAll(".hot").forEach((h) => h.remove());
+  for (const [x1, y1, x2, y2, to, label] of s.hot) {
+    const b = document.createElement("button");
+    b.className = "hot";
+    b.setAttribute("aria-label", `${label} → ${byId[to].title}`);
+    Object.assign(b.style, { left: `${(x1 / 780) * 100}%`, top: `${(y1 / 1688) * 100}%`, width: `${((x2 - x1) / 780) * 100}%`, height: `${((y2 - y1) / 1688) * 100}%` });
+    b.onclick = (e) => { e.stopPropagation(); stop(); go(to); };
+    $("screen").append(b);
+  }
+  $("title").textContent = s.title;
+  $("desc").textContent = s.desc;
+  SCREENS.forEach((x, j) => x.navButton.setAttribute("aria-current", String(j === current)));
+  try { history.replaceState(null, "", `#${s.id}`); } catch {}
+}
+const go = (id) => show(SCREENS.findIndex((s) => s.id === id));
+
+// Tapping outside a hotspot: follow `next` if the screen has one, otherwise flash the hotspots.
+$("screen").onclick = () => {
+  const s = SCREENS[current];
+  if (s.next) return go(s.next);
+  const screen = $("screen");
+  screen.classList.remove("hint");
+  void screen.offsetWidth;
+  screen.classList.add("hint");
+  setTimeout(() => screen.classList.remove("hint"), 1900);
+};
+$("prev").onclick = () => { stop(); show(current - 1); };
+$("next").onclick = () => { stop(); show(current + 1); };
+$("showHot").onchange = (e) => $("screen").classList.toggle("show-hot", e.target.checked);
+
+function stop() { clearInterval(timer); timer = null; $("play").textContent = "▶ Autoplay"; }
+$("play").onclick = () => {
+  if (timer) return stop();
+  $("play").textContent = "❚❚ Pause";
+  timer = setInterval(() => show(current + 1), 2600);
+};
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest("input")) return;
+  if (e.key === "ArrowRight") { stop(); show(current + 1); }
+  else if (e.key === "ArrowLeft") { stop(); show(current - 1); }
+  else if (e.key === " ") { e.preventDefault(); $("play").click(); }
+});
+
+// Deep links: /docs/demo/#chat opens that screen, on load and when the hash changes.
+const fromHash = () => SCREENS.findIndex((s) => `#${s.id}` === location.hash);
+addEventListener("hashchange", () => { const i = fromHash(); if (i >= 0 && i !== current) { stop(); show(i); } });
+show(Math.max(0, fromHash()));
+</script>
+</body>
+</html>

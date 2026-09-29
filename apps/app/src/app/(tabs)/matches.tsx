@@ -1,10 +1,9 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { MatchesList, type MatchFilter } from "@/components/matches-list";
-import { Screen, Segmented, Text, TextField } from "@/components/ui";
+import { Avatar, Screen, Segmented, Text, TextField } from "@/components/ui";
 import { useLikes, useMatches } from "@/lib/queries";
 import { radii, spacing, useTheme } from "@/theme";
 
@@ -62,12 +61,11 @@ function LikesBanner() {
       ]}
     >
       <View style={{ flexDirection: "row" }}>
-        {likes.slice(0, 3).map((l, i) => (
-          <Image
-            key={l.profile.id}
-            source={{ uri: l.profile.photos[0]?.url }}
-            style={{ width: 40, height: 40, borderRadius: 20, marginLeft: i ? -14 : 0, borderWidth: 2, borderColor: colors.surfaceRaised }}
-          />
+        {/* Faces with photos first, so the stack rarely shows a placeholder. */}
+        {[...likes].sort((a, b) => Number(!a.profile.photos.length) - Number(!b.profile.photos.length)).slice(0, 3).map((l, i) => (
+          <View key={l.profile.id} style={{ marginLeft: i ? -14 : 0, borderWidth: 2, borderColor: colors.goldSoft, borderRadius: 22 }}>
+            <Avatar uri={l.profile.photos[0]?.url} size={40} />
+          </View>
         ))}
       </View>
       <View style={{ flex: 1 }}>

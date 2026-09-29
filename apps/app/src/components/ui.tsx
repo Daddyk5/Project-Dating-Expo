@@ -558,13 +558,14 @@ export function Segmented<T extends string>({
 export function Avatar({ uri, size = 56, ring, online, label }: { uri?: string; size?: number; ring?: boolean; online?: boolean; label?: string }) {
   const { colors } = useTheme();
   const pad = ring ? 3 : 0;
-  const img = (
-    <Image
-      source={uri ? { uri } : undefined}
-      style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: colors.skeleton, borderWidth: ring ? 2 : 0, borderColor: colors.background }}
-      contentFit="cover"
-      accessibilityLabel={label}
-    />
+  const circle = { width: size, height: size, borderRadius: size / 2, borderWidth: ring ? 2 : 0, borderColor: colors.background };
+  // No photo (not uploaded, or still in review): a person glyph instead of an empty circle.
+  const img = uri ? (
+    <Image source={{ uri }} style={[circle, { backgroundColor: colors.skeleton }]} contentFit="cover" accessibilityLabel={label} />
+  ) : (
+    <View accessibilityLabel={label} style={[circle, { backgroundColor: colors.primarySoft, alignItems: "center", justifyContent: "center" }]}>
+      <Ionicons name="person" size={size * 0.5} color={colors.primary} />
+    </View>
   );
   return (
     <View>

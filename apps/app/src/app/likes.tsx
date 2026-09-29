@@ -94,7 +94,13 @@ export default function Likes() {
                       { opacity: pressed ? 0.85 : 1, borderColor: l.superlike ? colors.superlike : "transparent" },
                     ]}
                   >
-                    <Image source={{ uri: p.photos[0]?.url }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                    {p.photos[0] ? (
+                      <Image source={{ uri: p.photos[0].url }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                    ) : (
+                      <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.primarySoft, alignItems: "center", justifyContent: "center" }]}>
+                        <Ionicons name="person" size={56} color={colors.primary} />
+                      </View>
+                    )}
                     <View style={styles.badges}>
                       {l.superlike && (
                         <View style={[styles.superBadge, { backgroundColor: colors.superlike }]}>
