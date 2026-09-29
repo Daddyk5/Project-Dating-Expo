@@ -1,12 +1,12 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
-import { useState } from "react";
-import { Platform, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { AccessibilityInfo, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, ErrorText, Text, type IconName } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
-import { MAX_CONTENT_WIDTH, radii, spacing, useTheme } from "@/theme";
+import { MAX_CONTENT_WIDTH, radii, spacing, TOUCH, useTheme } from "@/theme";
 
 const SLIDES: { icon: IconName; title: string; body: string }[] = [
   { icon: "people", title: "Real people, close by", body: "Meet singles near you who share what you love, from island hopping to OPM nights." },
@@ -20,6 +20,22 @@ export default function Welcome() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [width, setWidth] = useState(0);
+  const scroller = useRef<ScrollView>(null);
+  // Auto-advance pauses while the pointer is over the card or a dot has focus, and never runs with reduced motion.
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion).catch(() => {});
+  }, []);
+
+  const goTo = (i: number) => scroller.current?.scrollTo({ x: i * width, animated: true });
+  useEffect(() => {
+    if (!width || hovered || focused || reduceMotion) return;
+    const next = (page + 1) % SLIDES.length;
+    const t = setTimeout(() => scroller.current?.scrollTo({ x: next * width, animated: true }), 5000);
+    return () => clearTimeout(t);
+  }, [page, width, hovered, focused, reduceMotion]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -36,12 +52,16 @@ export default function Welcome() {
           <Text style={{ color: "rgba(255,255,255,0.9)", textAlign: "center" }}>Dating, done with intention.</Text>
         </View>
 
-        <View
-          style={[styles.carouselCard, { backgroundColor: colors.surfaceRaised, boxShadow: colors.shadowStrong }]}
+        <Pressable
+          accessible={false}
+          onHoverIn={() => setHovered(true)}
+          onHoverOut={() => setHovered(false)}
+          style={[styles.carouselCard, { backgroundColor: colors.surfaceRaised, boxShadow: colors.shadowStrong, cursor: "auto" }]}
           onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
         >
           {width > 0 && (
             <ScrollView
+              ref={scroller}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
@@ -64,12 +84,23 @@ export default function Welcome() {
               ))}
             </ScrollView>
           )}
-          <View style={styles.dots} accessibilityLabel={`Slide ${page + 1} of ${SLIDES.length}`}>
+          <View style={styles.dots}>
             {SLIDES.map((s, i) => (
-              <View key={s.title} style={[styles.dot, { width: i === page ? 20 : 6, backgroundColor: i === page ? colors.primary : colors.border }]} />
+              <Pressable
+                key={s.title}
+                accessibilityRole="button"
+                accessibilityLabel={`Show slide ${i + 1} of ${SLIDES.length}: ${s.title}`}
+                accessibilityState={{ selected: i === page }}
+                onPress={() => goTo(i)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                style={styles.dotTarget}
+              >
+                <View style={[styles.dot, { width: i === page ? 20 : 8, backgroundColor: i === page ? colors.primary : colors.border }]} />
+              </Pressable>
             ))}
           </View>
-        </View>
+        </Pressable>
 
         <View style={{ gap: spacing.md, paddingBottom: spacing.lg }}>
           <Button title="Create account" icon="sparkles" onPress={() => router.push("/sign-up")} />
@@ -112,6 +143,8 @@ const styles = StyleSheet.create({
   carouselCard: { borderRadius: radii.xl, paddingVertical: spacing.xl, gap: spacing.lg, overflow: "hidden" },
   slide: { alignItems: "center", gap: spacing.sm, paddingHorizontal: spacing.xl },
   slideIcon: { width: 56, height: 56, borderRadius: 18, alignItems: "center", justifyContent: "center", marginBottom: spacing.xs },
-  dots: { flexDirection: "row", justifyContent: "center", gap: 6 },
-  dot: { height: 6, borderRadius: 3 },
+  dots: { flexDirection: "row", justifyContent: "center", marginVertical: -spacing.md },
+  // The dot stays small; the pressable area around it is a full touch target.
+  dotTarget: { minWidth: TOUCH, height: TOUCH, alignItems: "center", justifyContent: "center" },
+  dot: { height: 8, borderRadius: 4 },
 });

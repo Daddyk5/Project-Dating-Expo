@@ -1,6 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import type { PublicProfile } from "@kxq/shared";
 import { radii, spacing, useTheme } from "@/theme";
@@ -23,12 +24,19 @@ export function ProfileCard({
   profile,
   photoIndex,
   compat,
+  compatExpanded,
+  onCompatLayout,
 }: {
   profile: PublicProfile;
   photoIndex: number;
   compat?: string | null;
+  /** Show the whole AI line instead of two lines. */
+  compatExpanded?: boolean;
+  /** Where the AI line sits, in card coordinates, so the deck can make it tappable. */
+  onCompatLayout?: (rect: { y: number; height: number }) => void;
 }) {
   const { colors } = useTheme();
+  const infoY = useRef(0);
   const photo = profile.photos[photoIndex] ?? profile.photos[0];
   return (
     <View style={[styles.card, { backgroundColor: colors.surface }]}>
@@ -59,7 +67,12 @@ export function ProfileCard({
         </View>
       )}
 
-      <LinearGradient colors={["transparent", "rgba(0,0,0,0.85)"]} style={styles.info} pointerEvents="none">
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.85)"]}
+        style={styles.info}
+        pointerEvents="none"
+        onLayout={(e) => (infoY.current = e.nativeEvent.layout.y)}
+      >
         <View style={styles.row}>
           <Text variant="title" style={styles.white} numberOfLines={1}>
             {profile.displayName}
@@ -79,9 +92,12 @@ export function ProfileCard({
           </Text>
         </View>
         {compat ? (
-          <View style={styles.compat}>
+          <View
+            style={styles.compat}
+            onLayout={(e) => onCompatLayout?.({ y: infoY.current + e.nativeEvent.layout.y, height: e.nativeEvent.layout.height })}
+          >
             <Ionicons name="sparkles" size={14} color="#F5B82E" />
-            <Text variant="small" style={[styles.white, { flex: 1 }]} numberOfLines={2}>
+            <Text variant="small" style={[styles.white, { flex: 1 }]} numberOfLines={compatExpanded ? undefined : 2}>
               {compat}
             </Text>
           </View>

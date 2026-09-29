@@ -84,7 +84,9 @@ export function MatchesList({ compact, filter = "all", query = "" }: { compact?:
         const last = m.lastMessage!;
         const mine = last.senderId === user?.id;
         const active = pathname === `/chat/${m.id}`;
-        const preview = last.flagged && !mine ? "⚠️ Message may be unsafe" : `${mine ? "You: " : ""}${last.body}`;
+        // A flagged message is previewed neutrally; the full warning lives inside the chat.
+        const held = last.flagged && !mine;
+        const preview = held ? "Message held for review" : `${mine ? "You: " : ""}${last.body}`;
         return (
           <Pressable
             key={m.id}
@@ -107,17 +109,21 @@ export function MatchesList({ compact, filter = "all", query = "" }: { compact?:
                   {timeAgo(last.createdAt)}
                 </Text>
               </View>
-              <Text
-                variant="small"
-                muted={!m.unreadCount}
-                numberOfLines={1}
-                style={m.unreadCount ? { fontWeight: "600" } : undefined}
-              >
-                {preview}
-              </Text>
+              {held ? (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                  <Ionicons name="shield-half-outline" size={14} color={colors.textMuted} />
+                  <Text variant="small" muted numberOfLines={1} style={{ fontStyle: "italic" }}>
+                    {preview}
+                  </Text>
+                </View>
+              ) : (
+                <Text variant="small" muted={!m.unreadCount} numberOfLines={1} style={m.unreadCount ? { fontWeight: "600" } : undefined}>
+                  {preview}
+                </Text>
+              )}
             </View>
             {m.unreadCount > 0 && (
-              <View style={[styles.unread, { backgroundColor: colors.primary }]}>
+              <View style={[styles.unread, { backgroundColor: colors.primaryFill }]}>
                 <Text variant="caption" style={{ color: colors.onPrimary }}>
                   {m.unreadCount}
                 </Text>

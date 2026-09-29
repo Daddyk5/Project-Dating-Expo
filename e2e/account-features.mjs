@@ -124,26 +124,6 @@ async function signUpAndOnboard(page, u, { testUnderage = false } = {}) {
   log(`[${u.name}] onboarding complete → Discover`);
 }
 
-/** Pass on everyone until `target` is the top card, then like them. */
-async function findAndLike(page, me, target) {
-  for (let i = 0; i < 60; i++) {
-    const card = page.getByRole("slider").first();
-    await card.waitFor({ timeout: 30000 });
-    const label = (await card.getAttribute("aria-label")) ?? "";
-    if (label.startsWith(`${target.name},`)) {
-      log(`[${me.name}] found ${target.name} after ${i} passes: "${label}"`);
-      return;
-    }
-    await page.keyboard.press("ArrowLeft");
-    await page.waitForFunction((prev) => {
-      const el = document.querySelector('[role="slider"]');
-      return !el || el.getAttribute("aria-label") !== prev;
-    }, label, { timeout: 15000 });
-  }
-  throw new Error(`${me.name} never saw ${target.name} in Discover`);
-}
-
-
 const env = Object.fromEntries(readFileSync(new URL("../apps/app/.env", import.meta.url), "utf8").split(/\r?\n/).filter((l) => /^\w+=/.test(l)).map((l) => l.split(/=(.*)/s).slice(0, 2)));
 const AUTH = env.EXPO_PUBLIC_NEON_AUTH_URL.replace(/\/$/, ""), API = env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
 const call = (page, method, path, body) => page.evaluate(async ([AUTH, API, method, path, body]) => {

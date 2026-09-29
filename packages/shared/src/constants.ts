@@ -40,3 +40,17 @@ export const INTERESTS = [
   "Cats", "Plants", "Volunteering", "Church", "Tech", "Startups", "Fashion",
   "Thrifting", "Languages", "Mountains", "Island hopping",
 ] as const;
+export type Interest = (typeof INTERESTS)[number];
+
+/** Shown on interest chips. Typed against INTERESTS so a new interest can't ship without one. */
+export const INTEREST_EMOJI: Record<Interest, string> = {
+  Hiking: "🥾", "Beach days": "🏖️", Diving: "🤿", Surfing: "🏄", Coffee: "☕", Cooking: "🍳", Baking: "🧁",
+  "Street food": "🍢", Durian: "🍈", Karaoke: "🎤", Dancing: "💃", "Live music": "🎶", "K-pop": "🎧", OPM: "🎵",
+  Guitar: "🎸", Photography: "📷", Art: "🎨", Anime: "🍥", Gaming: "🎮", "Board games": "🎲", Movies: "🎬",
+  Netflix: "📺", Reading: "📚", Writing: "✍️", Basketball: "🏀", Volleyball: "🏐", Running: "🏃",
+  Gym: "🏋️", Yoga: "🧘", Cycling: "🚴", Travel: "✈️", "Road trips": "🚗", Camping: "⛺", Pets: "🐾", Dogs: "🐶",
+  Cats: "🐱", Plants: "🪴", Volunteering: "🤝", Church: "⛪", Tech: "💻", Startups: "🚀", Fashion: "👗",
+  Thrifting: "🛍️", Languages: "🗣️", Mountains: "⛰️", "Island hopping": "🏝️",
+};
+
+export const interestLabel = (i: string) => `${INTEREST_EMOJI[i as Interest] ?? "✨"} ${i}`;

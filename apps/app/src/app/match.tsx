@@ -1,8 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withSpring } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Text } from "@/components/ui";
@@ -30,6 +32,14 @@ export default function ItsAMatch() {
 
   return (
     <View style={styles.backdrop} accessibilityViewIsModal>
+      {/* Blur whatever screen we came from, then wash it in the brand gradient so only the match stands out. */}
+      <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+      <LinearGradient
+        colors={[`rgba(216,27,96,${TINT})`, `rgba(123,31,162,${TINT})`, `rgba(20,8,28,${Math.min(1, TINT + 0.12)})`]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
       <SafeAreaView style={styles.content}>
         <Animated.View style={[{ alignItems: "center", gap: spacing.sm }, titleStyle]}>
           <Ionicons name="heart" size={48} color="#F5B82E" />
@@ -68,8 +78,11 @@ export default function ItsAMatch() {
   );
 }
 
+// Android's BlurView can't blur a screen underneath a modal, so the tint does all the work there.
+const TINT = Platform.OS === "android" ? 0.94 : 0.72;
+
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: "rgba(20,4,12,0.92)" },
+  backdrop: { flex: 1 },
   content: { flex: 1, alignItems: "center", justifyContent: "space-evenly", padding: spacing.xl },
   photos: { flexDirection: "row", gap: -spacing.lg },
   photoWrap: { borderWidth: 4, borderColor: "#FFF", borderRadius: 24, overflow: "hidden" },

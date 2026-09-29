@@ -203,6 +203,11 @@ try {
   await maya.getByRole("button", { name: `Like ${MARCO.name} back` }).waitFor({ timeout: 20000 });
   await maya.waitForTimeout(1500);
   await shot(maya, "likes-you");
+  await maya.getByRole("button", { name: "Review one by one" }).click();
+  await maya.getByRole("button", { name: "Like back" }).waitFor({ timeout: 10000 });
+  await maya.waitForTimeout(1200);
+  await shot(maya, "likes-review");
+  await maya.getByRole("button", { name: "Show grid" }).click();
   await maya.getByRole("button", { name: `Like ${MARCO.name} back` }).click();
   await maya.getByText("It’s a Match!").waitFor({ timeout: 20000 });
   await maya.waitForTimeout(1200);

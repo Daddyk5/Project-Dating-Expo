@@ -15,7 +15,7 @@ One Expo codebase for **iOS, Android and the web**, on a TypeScript API backed b
 ![Express 5](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
 ![Neon Postgres](https://img.shields.io/badge/Neon-Postgres%20%2B%20PostGIS-00E599?logo=postgresql&logoColor=white)
 ![Socket.io](https://img.shields.io/badge/Socket.io-realtime-010101?logo=socketdotio&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-57%20API%20%2B%20Playwright%20e2e-D81B60)
+![Tests](https://img.shields.io/badge/tests-62%20API%20%2B%20Playwright%20e2e-D81B60)
 
 [**Interactive demo**](https://daddyk5.github.io/Project-Dating-Expo/demo/) · [Features](#features) · [Screenshots](#screenshots) · [Quick start](#quick-start) · [Architecture](#architecture) · [API](#api)
 
@@ -60,15 +60,15 @@ Use <kbd>←</kbd> <kbd>→</kbd> to step through, or press **Autoplay**.
 
 ### 💘 Meet people
 - **Swipe deck** with drag, buttons or <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd>, plus rewind
-- **People Nearby** grid, closest first, with online-now dots
-- **Likes you**: everyone who already liked you; like back to match instantly
+- **People Nearby** grid, closest first, with online-now dots and a shared interest on each tile
+- **Likes you**: everyone who already liked you, as a grid or a swipe deck; like back to match instantly
 - Two-way preferences for age, gender and distance, powered by PostGIS
 
 </td>
 <td width="33%" valign="top">
 
 ### 🤖 AI that helps
-- **Compatibility line** on each card: what you actually share
+- **Compatibility line** on each card: what you actually share, in 90 characters or fewer
 - **Icebreakers** written from both profiles
 - **Bio polish**: two rewrites that keep your facts
 - Runs on **Ollama** locally, **Anthropic** or the **Neon AI Gateway**, all server-side
@@ -137,10 +137,11 @@ Use <kbd>←</kbd> <kbd>→</kbd> to step through, or press **Autoplay**.
 </table>
 
 <details>
-<summary><b>More screens</b>: sign in, sign up, interests, settings, Royal, safety</summary>
+<summary><b>More screens</b>: review likes one by one, sign in, sign up, interests, settings, Royal, safety</summary>
 <br>
 <table>
 <tr>
+<td align="center"><img src="docs/screenshots/likes-review.png" width="200" alt="Review likes one by one as a swipe deck"><br><sub>Review likes one by one</sub></td>
 <td align="center"><img src="docs/screenshots/sign-in.png" width="200" alt="Sign in"><br><sub>Sign in</sub></td>
 <td align="center"><img src="docs/screenshots/sign-up.png" width="200" alt="Sign up"><br><sub>Sign up</sub></td>
 <td align="center"><img src="docs/screenshots/onboarding-interests.png" width="200" alt="Interests"><br><sub>Interests</sub></td>
@@ -149,6 +150,7 @@ Use <kbd>←</kbd> <kbd>→</kbd> to step through, or press **Autoplay**.
 <td align="center"><img src="docs/screenshots/settings.png" width="200" alt="Settings"><br><sub>Settings</sub></td>
 <td align="center"><img src="docs/screenshots/premium.png" width="200" alt="KingxQueen Royal"><br><sub>Royal (waitlist)</sub></td>
 <td align="center"><img src="docs/screenshots/safety.png" width="200" alt="Safety center"><br><sub>Safety center</sub></td>
+<td align="center"><img src="docs/screenshots/chat.png" width="200" alt="Chat in light mode"><br><sub>Chat</sub></td>
 </tr>
 </table>
 </details>
@@ -277,7 +279,7 @@ AI_PROVIDER=neon-gateway  AI_MODEL=<model>                      # paid Neon plan
 
 | Command | What it covers |
 | --- | --- |
-| `npm test` | 57 API tests (vitest + supertest) against the Neon `test` branch: auth, discovery, matching races, messaging, likes, blocks |
+| `npm test` | 62 API tests (vitest + supertest) against the Neon `test` branch: auth, discovery, matching races, messaging, likes, blocks |
 | `npm run e2e` | Web end to end: two users sign up → onboard → find each other → match → chat → safety warning → delete accounts |
 | `npm run e2e:features` | Likes you, Blocked people, change password, reset-password link states, 404 |
 | `npm run screenshots` | Regenerates everything in `docs/screenshots/` from the running app |

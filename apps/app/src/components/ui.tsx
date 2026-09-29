@@ -126,7 +126,7 @@ export function Button({
   size?: "sm" | "md";
 }) {
   const { colors } = useTheme();
-  const bg = { primary: "transparent", royal: "transparent", secondary: colors.surfaceRaised, ghost: "transparent", danger: colors.danger }[variant];
+  const bg = { primary: "transparent", royal: "transparent", secondary: colors.surfaceRaised, ghost: "transparent", danger: colors.dangerFill }[variant];
   const fg =
     variant === "primary" || variant === "danger"
       ? colors.onPrimary
@@ -543,7 +543,7 @@ export function Segmented<T extends string>({
               {o.label}
             </Text>
             {!!o.badge && (
-              <View style={[styles.segmentBadge, { backgroundColor: colors.primary }]}>
+              <View style={[styles.segmentBadge, { backgroundColor: colors.primaryFill }]}>
                 <RNText style={{ color: colors.onPrimary, fontSize: 11, fontWeight: "700" }}>{o.badge}</RNText>
               </View>
             )}

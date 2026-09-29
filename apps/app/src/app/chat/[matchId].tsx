@@ -1,9 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, useWindowDimensions, View } from "react-native";
 import type { MatchSummary, Message } from "@kxq/shared";
 import { ActionMenu, ReportSheet } from "@/components/safety-sheet";
 import { DemoBadge, EmptyState, ErrorText, IconButton, Screen, Skeleton, Text } from "@/components/ui";
@@ -17,6 +18,7 @@ import { MAX_CONTENT_WIDTH, radii, spacing, TOUCH, useTheme } from "@/theme";
 export default function Chat() {
   const { matchId, icebreakers: autoIcebreakers } = useLocalSearchParams<{ matchId: string; icebreakers?: string }>();
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
   const { user } = useAuth();
   const qc = useQueryClient();
   const socket = useSocket();
@@ -101,6 +103,8 @@ export default function Chat() {
       typingSent.current = 0;
     }, 3000);
   };
+
+  const canSend = !!text.trim() && !send.isPending;
 
   const submit = async () => {
     const body = text.trim();
@@ -207,20 +211,39 @@ export default function Chat() {
         )}
 
         {/* Icebreaker suggestions */}
-        {ideas && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm, paddingVertical: spacing.sm }} style={{ flexGrow: 0 }}>
-            {ideas.map((idea) => (
-              <Pressable
-                key={idea}
-                accessibilityRole="button"
-                accessibilityLabel={`Use icebreaker: ${idea}`}
-                onPress={() => setText(idea)}
-                style={{ maxWidth: 260, borderWidth: 1, borderColor: colors.primary, borderRadius: radii.lg, padding: spacing.md, backgroundColor: colors.chipSelected }}
-              >
-                <Text variant="small">{idea}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+        {ideas && ideas.length > 0 && (
+          <View style={{ gap: spacing.xs, paddingTop: spacing.sm }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Ionicons name="sparkles" size={14} color={colors.goldDeep} />
+              <Text variant="caption" muted style={{ fontWeight: "600" }}>
+                {ideas.length} {ideas.length === 1 ? "idea" : "ideas"} from what you share
+              </Text>
+            </View>
+            {width >= 600 ? (
+              // Wide screens: room to show every idea at once.
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, paddingBottom: spacing.xs }}>
+                {ideas.map((idea) => (
+                  <IdeaChip key={idea} idea={idea} onPress={() => setText(idea)} />
+                ))}
+              </View>
+            ) : (
+              <View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xs, paddingRight: spacing.xxl }} style={{ flexGrow: 0 }}>
+                  {ideas.map((idea) => (
+                    <IdeaChip key={idea} idea={idea} onPress={() => setText(idea)} />
+                  ))}
+                </ScrollView>
+                {/* Fade hints that the row scrolls. */}
+                <LinearGradient
+                  colors={["transparent", colors.background]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  pointerEvents="none"
+                  style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: spacing.xxl }}
+                />
+              </View>
+            )}
+          </View>
         )}
 
         <ErrorText>{error}</ErrorText>
@@ -255,7 +278,16 @@ export default function Chat() {
               }}
               style={{ flex: 1, minHeight: TOUCH, maxHeight: 120, borderRadius: radii.xl, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, backgroundColor: colors.surface, color: colors.text, fontSize: 16 }}
             />
-            <IconButton icon="send" label="Send message" onPress={submit} disabled={!text.trim() || send.isPending} color={colors.onPrimary} background={colors.primary} />
+            {/* Empty box: a quiet neutral button (not a faded pink one), brand colour once there's text. */}
+            <IconButton
+              icon="send"
+              label="Send message"
+              onPress={submit}
+              disabled={!canSend}
+              color={canSend ? colors.onPrimary : colors.textMuted}
+              background={canSend ? colors.primaryFill : colors.surface}
+              style={{ opacity: 1 }}
+            />
           </View>
         )}
       </KeyboardAvoidingView>
@@ -315,7 +347,7 @@ function Bubble({ message, mine, showSeen }: { message: Message; mine: boolean; 
         <View
           style={{
             maxWidth: "80%",
-            backgroundColor: mine ? colors.primary : colors.surface,
+            backgroundColor: mine ? colors.primaryFill : colors.surface,
             borderRadius: radii.lg,
             borderBottomRightRadius: mine ? 4 : radii.lg,
             borderBottomLeftRadius: mine ? radii.lg : 4,
@@ -337,6 +369,28 @@ function Bubble({ message, mine, showSeen }: { message: Message; mine: boolean; 
         </Text>
       )}
     </View>
+  );
+}
+
+function IdeaChip({ idea, onPress }: { idea: string; onPress(): void }) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Use icebreaker: ${idea}`}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        maxWidth: 260,
+        borderWidth: 1,
+        borderColor: colors.primary,
+        borderRadius: radii.lg,
+        padding: spacing.md,
+        backgroundColor: colors.chipSelected,
+        opacity: pressed ? 0.8 : 1,
+      })}
+    >
+      <Text variant="small">{idea}</Text>
+    </Pressable>
   );
 }
 

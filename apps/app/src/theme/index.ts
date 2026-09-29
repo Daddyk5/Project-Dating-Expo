@@ -19,6 +19,8 @@ const palette = {
 export const lightColors = {
   ...palette,
   primary: palette.rose,
+  /** Filled surfaces that carry white text (bubbles, badges, filled buttons). ≥ 4.5:1 with onPrimary. */
+  primaryFill: palette.rose,
   onPrimary: "#FFFFFF",
   /** Primary CTA gradient (white text passes AA across the whole ramp). */
   gradient: ["#D81B60", "#8E1A7E"] as [string, string],
@@ -31,6 +33,7 @@ export const lightColors = {
   text: "#101018",
   textMuted: "#5E5E6E",
   danger: "#B91C1C",
+  dangerFill: "#B91C1C",
   success: "#15803D",
   warningBg: "#FEF3C7",
   warningText: "#78350F",
@@ -47,7 +50,9 @@ export type Colors = typeof lightColors;
 
 export const darkColors: Colors = {
   ...palette,
+  // #EC407A is for icons, text and outlines on dark surfaces; white text on it is only 3.8:1.
   primary: "#EC407A",
+  primaryFill: "#C2185B",
   onPrimary: "#FFFFFF",
   gradient: ["#D81B60", "#7B1FA2"],
   royal: ["#1A1024", "#3D1438"],
@@ -58,6 +63,7 @@ export const darkColors: Colors = {
   text: "#F4F4F7",
   textMuted: "#A6A6B4",
   danger: "#F87171",
+  dangerFill: "#B91C1C",
   success: "#4ADE80",
   warningBg: "#422006",
   warningText: "#FDE68A",

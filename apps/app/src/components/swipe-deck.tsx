@@ -74,6 +74,8 @@ function TopCard({
   const [photoIndex, setPhotoIndex] = useState(0);
   const [cardWidth, setCardWidth] = useState(1);
   const [cardHeight, setCardHeight] = useState(1);
+  const [compatOpen, setCompatOpen] = useState(false);
+  const [compatRect, setCompatRect] = useState<{ y: number; height: number } | null>(null);
 
   const done = useCallback((action: SwipeAction) => onSwipe(profile, action), [onSwipe, profile]);
 
@@ -95,12 +97,13 @@ function TopCard({
 
   const tapAt = useCallback(
     (tx: number, ty: number) => {
+      if (compatRect && ty >= compatRect.y && ty <= compatRect.y + compatRect.height) return setCompatOpen((o) => !o);
       if (ty > cardHeight * 0.7) return onOpen(profile); // tapping the details opens the full profile
       const n = profile.photos.length;
       if (n < 2) return;
       setPhotoIndex((i) => (tx < cardWidth / 2 ? Math.max(0, i - 1) : Math.min(n - 1, i + 1)));
     },
-    [cardWidth, cardHeight, onOpen, profile],
+    [cardWidth, cardHeight, compatRect, onOpen, profile],
   );
 
   const pan = Gesture.Pan()
@@ -167,7 +170,7 @@ function TopCard({
           else fling(a as SwipeAction);
         }}
       >
-        <ProfileCard profile={profile} photoIndex={photoIndex} compat={compat} />
+        <ProfileCard profile={profile} photoIndex={photoIndex} compat={compat} compatExpanded={compatOpen} onCompatLayout={setCompatRect} />
         <Animated.View style={[styles.stamp, styles.likeStamp, likeStyle]} pointerEvents="none">
           <Text variant="title" style={{ color: "#22C55E" }}>
             LIKE

@@ -34,7 +34,7 @@ export default function TabsLayout() {
           // Web's default 49px clips the labels; native keeps its safe-area-aware height.
           ...(Platform.OS === "web" ? { height: 64, paddingTop: 4 } : null),
         },
-        tabBarBadgeStyle: { backgroundColor: colors.primary, fontSize: 11, fontWeight: "700" },
+        tabBarBadgeStyle: { backgroundColor: colors.primaryFill, fontSize: 11, fontWeight: "700" },
         tabBarLabelStyle: { fontSize: 11, lineHeight: 16, fontWeight: "700" },
       }}
       // Desktop web uses the sidebar instead of a bottom bar.
@@ -92,7 +92,7 @@ function Sidebar({ unread }: { unread: number }) {
                 {t.title}
               </Text>
               {t.name === "matches" && unread > 0 && (
-                <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+                <View style={[styles.badge, { backgroundColor: colors.primaryFill }]}>
                   <Text variant="caption" style={{ color: colors.onPrimary }}>
                     {unread}
                   </Text>

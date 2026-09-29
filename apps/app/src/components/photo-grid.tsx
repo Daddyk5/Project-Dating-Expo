@@ -146,7 +146,7 @@ function DraggableTile({
           <Image source={{ uri: photo.url }} style={StyleSheet.absoluteFill} contentFit="cover" />
         </View>
         {index === 0 && (
-          <View style={[styles.mainTag, { backgroundColor: colors.primary }]}>
+          <View style={[styles.mainTag, { backgroundColor: colors.primaryFill }]}>
             <Text variant="caption" style={{ color: colors.onPrimary }}>
               Main
             </Text>

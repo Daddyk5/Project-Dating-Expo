@@ -116,24 +116,40 @@ export async function compatibility(userId: string, targetId: string) {
 
   const { rows: cached } = await db.execute<{ summary: string }>(sql`
     select summary from compatibility_cache
-    where user_a = ${a} and user_b = ${b} and created_at > now() - interval '7 days'`);
+    where user_a = ${a} and user_b = ${b} and created_at > now() - interval '7 days'
+      and char_length(summary) <= ${P.COMPAT_MAX}`);
   if (cached[0]) return { summary: cached[0].summary, cached: true };
 
   consumeQuota(userId);
   const f = await facts([userId, targetId]);
   const viewer = f.get(userId)!;
   const profile = f.get(targetId)!;
-  const out = await generate(
-    P.compatibilityOutput,
-    P.compatibility.system,
-    P.compatibility.prompt(viewer, profile, sharedInterests(viewer, profile)),
-    { temperature: 0.6, maxTokens: 200 },
-  );
+  const shared = sharedInterests(viewer, profile);
+  // If the model can't keep it short, a plain line from the shared interests still beats nothing.
+  const out = await generate(P.compatibilityOutput, P.compatibility.system, P.compatibility.prompt(viewer, profile, shared), {
+    temperature: 0.6,
+    maxTokens: 120,
+  }).catch((e) => {
+    const fallback = fallbackCompatibility(shared);
+    if (!fallback) throw e;
+    return { summary: fallback };
+  });
   // Written from the viewer's side, which reads naturally either way ("You both...").
   await db.execute(sql`
     insert into compatibility_cache (user_a, user_b, summary) values (${a}, ${b}, ${out.summary})
     on conflict (user_a, user_b) do update set summary = excluded.summary, created_at = now()`);
   return { summary: out.summary, cached: false };
+}
+
+/** "You both like diving, coffee and hiking." — trimmed to fit the card. */
+export function fallbackCompatibility(shared: string[]): string | null {
+  for (let n = Math.min(shared.length, 3); n > 0; n--) {
+    const list = shared.slice(0, n).map((s) => s.toLowerCase());
+    const joined = list.length > 1 ? `${list.slice(0, -1).join(", ")} and ${list.at(-1)}` : list[0];
+    const line = `You both like ${joined}.`;
+    if (line.length <= P.COMPAT_MAX) return line;
+  }
+  return null;
 }
 
 // ---------- message safety ----------

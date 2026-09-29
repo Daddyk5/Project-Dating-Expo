@@ -156,7 +156,7 @@ export default function Discover() {
         <IconButton icon="arrow-undo" label="Undo last pass" onPress={undo} disabled={!lastPass} color={colors.goldDeep} elevated diameter={48} size={22} />
         <IconButton icon="close" label="Pass" onPress={() => deckRef.current?.swipe("pass")} disabled={!top} color={colors.pass} elevated diameter={66} size={32} />
         <IconButton icon="star" label="Super like" onPress={() => deckRef.current?.swipe("superlike")} disabled={!top} color={colors.superlike} elevated diameter={52} size={24} />
-        <IconButton icon="heart" label="Like" onPress={() => deckRef.current?.swipe("like")} disabled={!top} color={colors.onPrimary} background={colors.primary} elevated diameter={66} size={32} />
+        <IconButton icon="heart" label="Like" onPress={() => deckRef.current?.swipe("like")} disabled={!top} color={colors.onPrimary} background={colors.primaryFill} elevated diameter={66} size={32} />
         <IconButton icon="information-circle" label="View full profile" onPress={() => top && open(top)} disabled={!top} color={colors.textMuted} elevated diameter={48} size={22} />
       </View>
       {Platform.OS === "web" && keyboardHints && (

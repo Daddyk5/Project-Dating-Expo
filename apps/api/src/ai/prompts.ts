@@ -68,14 +68,17 @@ Respond with JSON only: {"versions": ["...", "..."]}`,
 
 // ---------- Compatibility ----------
 
+/** Must fit two lines on a phone card; longer output is rejected and retried. */
+export const COMPAT_MAX = 90;
+
 export const compatibilityOutput = z.object({
-  summary: z.string().min(10).max(160),
+  summary: z.string().trim().min(10).max(COMPAT_MAX),
 });
 
 export const compatibility = {
   system: `You write one friendly sentence for a dating app profile card that tells the VIEWER what they have in common with the PROFILE they are looking at.
 Rules:
-- One sentence, under 140 characters, addressed to the viewer as "you" (e.g. "You both love diving and weekend road trips.").
+- One short sentence of at most 90 characters, addressed to the viewer as "you" (e.g. "You both love diving and weekend road trips."). Count carefully; longer replies are rejected.
 - Mention only things that are actually shared or clearly related. Never invent facts.
 - If little is shared, point out one genuine, related detail kindly.
 - No judgments about attractiveness, nothing sexual, no percentages or scores.

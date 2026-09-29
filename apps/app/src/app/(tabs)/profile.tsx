@@ -8,14 +8,27 @@ import { useLikes, useMatches, useMe } from "@/lib/queries";
 import { useSettings } from "@/lib/settings";
 import { radii, spacing, useTheme } from "@/theme";
 
-/** Weighted checklist behind the "profile strength" meter. */
-function profileChecks(me: MyProfile): { label: string; done: boolean; weight: number; icon: IconName }[] {
+const PER_PHOTO = 5; // up to MAX_PHOTOS photos = 30%
+
+/**
+ * Weighted checklist behind the "profile strength" meter. `earned` is what the item
+ * already contributes; `weight` is what the next step adds, so photos pay out one at a time.
+ */
+function profileChecks(me: MyProfile): { label: string; done: boolean; weight: number; earned: number; icon: IconName }[] {
+  const photos = Math.min(me.photos.length, MAX_PHOTOS);
+  const check = (label: string, done: boolean, weight: number, icon: IconName) => ({ label, done, weight, earned: done ? weight : 0, icon });
   return [
-    { label: `Add ${MAX_PHOTOS} photos (${me.photos.length}/${MAX_PHOTOS})`, done: me.photos.length >= MAX_PHOTOS, weight: 30, icon: "images-outline" },
-    { label: "Write a bio of 80+ characters", done: me.bio.trim().length >= 80, weight: 25, icon: "create-outline" },
-    { label: "Pick at least 5 interests", done: me.interests.length >= 5, weight: 20, icon: "heart-outline" },
-    { label: "Share your location", done: me.hasLocation, weight: 15, icon: "location-outline" },
-    { label: "Get verified", done: me.isVerified, weight: 10, icon: "shield-checkmark-outline" },
+    {
+      label: `Add 1 more photo (${photos}/${MAX_PHOTOS})`,
+      done: photos >= MAX_PHOTOS,
+      weight: PER_PHOTO,
+      earned: photos * PER_PHOTO,
+      icon: "images-outline",
+    },
+    check("Write a bio of 80+ characters", me.bio.trim().length >= 80, 25, "create-outline"),
+    check("Pick at least 5 interests", me.interests.length >= 5, 20, "heart-outline"),
+    check("Share your location", me.hasLocation, 15, "location-outline"),
+    check("Get verified", me.isVerified, 10, "shield-checkmark-outline"),
   ];
 }
 
@@ -27,7 +40,7 @@ export default function ProfileTab() {
   const { royalWaitlist } = useSettings();
 
   const checks = me ? profileChecks(me) : [];
-  const score = checks.reduce((n, c) => n + (c.done ? c.weight : 0), 0);
+  const score = checks.reduce((n, c) => n + c.earned, 0);
   const todo = checks.filter((c) => !c.done);
   const conversations = matches.filter((m) => m.lastMessage).length;
   const unread = matches.reduce((n, m) => n + m.unreadCount, 0);
@@ -86,7 +99,7 @@ export default function ProfileTab() {
                 </Text>
                 <Text variant="title">{score}%</Text>
               </View>
-              <View style={[styles.scoreBadge, { backgroundColor: score >= 80 ? colors.success : score >= 50 ? colors.goldDeep : colors.primary }]}>
+              <View style={[styles.scoreBadge, { backgroundColor: score >= 80 ? colors.success : score >= 50 ? colors.goldDeep : colors.primaryFill }]}>
                 <Text variant="caption" style={{ color: "#FFFFFF", fontWeight: "700" }}>
                   {score >= 80 ? "Excellent" : score >= 50 ? "Good" : "Needs work"}
                 </Text>

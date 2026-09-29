@@ -11,6 +11,7 @@ import {
 } from "@kxq/shared";
 import { db } from "../db/client";
 import { env } from "../env";
+import { nearestPlace } from "../lib/places";
 import { badRequest, conflict, notFound } from "../lib/http";
 import { deleteObject, readUrl } from "../lib/storage";
 import { isOnline } from "../realtime/notifier";
@@ -189,6 +190,8 @@ export async function upsertProfile(id: string, u: ProfileUpdate) {
 }
 
 export async function setLocation(id: string, loc: { lat: number; lng: number; city?: string; country?: string }) {
+  // Web clients only send coordinates; name the nearest city so profiles don't show a blank location.
+  if (!loc.city) loc = { ...loc, ...nearestPlace(loc.lat, loc.lng), ...(loc.country ? { country: loc.country } : {}) };
   const { rowCount } = await db.execute(sql`
     update profiles set location = ST_SetSRID(ST_MakePoint(${loc.lng}, ${loc.lat}), 4326)::geography,
       city = coalesce(${loc.city ?? null}, city), country = coalesce(${loc.country ?? null}, country),
