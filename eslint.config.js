@@ -9,7 +9,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["**/*.{js,ts}"],
+    files: ["**/*.{js,mjs,ts}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -19,4 +19,6 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },
+  // Playwright passes some callbacks into the page, so browser globals are valid there.
+  { files: ["e2e/**"], languageOptions: { globals: { ...globals.browser } } },
 );
