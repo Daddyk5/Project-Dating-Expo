@@ -36,6 +36,21 @@ export interface MyProfile extends Omit<PublicProfile, "distanceKm" | "isOnline"
   onboardingComplete: boolean;
 }
 
+/** Someone who liked me and I haven't swiped on yet ("Likes you"). */
+export interface IncomingLike {
+  profile: PublicProfile;
+  superlike: boolean;
+  likedAt: string;
+}
+
+/** A person I blocked, for the "Blocked people" list. */
+export interface BlockedUser {
+  id: string;
+  displayName: string;
+  photoUrl: string | null;
+  blockedAt: string;
+}
+
 export interface SwipeResult {
   matched: boolean;
   matchId: string | null;

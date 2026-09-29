@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { FlatList, Pressable, RefreshControl, StyleSheet, useWindowDimensions, View } from "react-native";
 import { describeProfile, formatDistance } from "@/components/profile-card";
-import { DemoBadge, EmptyState, OnlineDot, Screen, Skeleton, Text, VerifiedIcon } from "@/components/ui";
+import { DemoBadge, EmptyState, IconButton, OnlineDot, Screen, Skeleton, Text, VerifiedIcon } from "@/components/ui";
 import { api } from "@/lib/api";
 import { keys } from "@/lib/queries";
 import { MAX_CONTENT_WIDTH, radii, spacing, WIDE_BREAKPOINT } from "@/theme";
@@ -18,9 +18,19 @@ export default function Nearby() {
 
   return (
     <Screen wide>
-      <Text variant="heading" accessibilityRole="header" style={{ paddingVertical: spacing.md }}>
-        People nearby
-      </Text>
+      <View style={{ flexDirection: "row", alignItems: "center", paddingTop: spacing.md, paddingBottom: spacing.lg }}>
+        <View style={{ flex: 1 }}>
+          <Text variant="display" accessibilityRole="header">
+            Nearby
+          </Text>
+          <Text muted>
+            {q.data?.length
+              ? `${q.data.length} people · ${q.data.filter((p) => p.isOnline).length} online now`
+              : "People around you, closest first"}
+          </Text>
+        </View>
+        <IconButton icon="options-outline" label="Discovery preferences" onPress={() => router.push("/preferences")} elevated diameter={40} size={20} />
+      </View>
       {q.isLoading ? (
         <View style={styles.grid}>
           {Array.from({ length: cols * 3 }, (_, i) => (
@@ -78,6 +88,6 @@ export default function Nearby() {
 
 const styles = StyleSheet.create({
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  tile: { aspectRatio: 3 / 4, borderRadius: radii.lg, overflow: "hidden" },
+  tile: { aspectRatio: 3 / 4, borderRadius: radii.lg, overflow: "hidden", boxShadow: "0px 6px 18px rgba(0,0,0,0.12)" },
   caption: { position: "absolute", left: 0, right: 0, bottom: 0, padding: spacing.sm, paddingTop: spacing.xxl },
 });

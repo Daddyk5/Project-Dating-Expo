@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Button, Text } from "@/components/ui";
+import { Button, Logo, Text } from "@/components/ui";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { queryClient, useMe } from "@/lib/queries";
 import { SocketProvider } from "@/lib/socket";
@@ -69,7 +69,13 @@ function RootStack() {
         <Stack.Screen name="preferences" />
         <Stack.Screen name="preview" />
         <Stack.Screen name="safety" />
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="likes" />
+        <Stack.Screen name="blocked" />
+        <Stack.Screen name="change-password" />
+        <Stack.Screen name="premium" options={{ presentation: "modal" }} />
       </Stack.Protected>
+      <Stack.Screen name="help" />
       <Stack.Screen name="terms" />
       <Stack.Screen name="privacy" />
     </Stack>
@@ -80,8 +86,10 @@ function BrandSplash() {
   const { colors } = useTheme();
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background, gap: spacing.md }}>
-      <Ionicons name="heart-circle" size={72} color={colors.primary} />
-      <Text variant="title">KingxQueen</Text>
+      <Logo size={48} wordmark />
+      <Text variant="caption" muted>
+        Dating, done with intention.
+      </Text>
     </View>
   );
 }

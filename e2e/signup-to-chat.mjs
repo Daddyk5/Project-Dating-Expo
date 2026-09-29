@@ -62,7 +62,7 @@ async function signUpAndOnboard(page, u, { testUnderage = false } = {}) {
   await page.getByRole("button", { name: "Create account" }).click();
   await page.getByLabel("First name").fill(u.name);
   await page.getByLabel("Email").fill(u.email);
-  await page.getByLabel("Password (8+ characters)").fill(PASSWORD);
+  await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByRole("checkbox", { name: "I confirm I am 18 or older" }).click();
   await page.getByRole("button", { name: "Create account", exact: true }).click();
   log(`[${u.name}] signed up`);
@@ -222,8 +222,8 @@ try {
 
   // Delete account (app-store requirement) for both test users
   for (const [u, s] of [[A, a], [B, b]]) {
-    await s.page.goto(`${APP}/profile`);
-    await s.page.getByRole("button", { name: "Delete my account permanently" }).click();
+    await s.page.goto(`${APP}/settings`);
+    await s.page.getByRole("button", { name: /^Delete account/ }).click();
     await s.page.getByRole("button", { name: "Create account" }).waitFor({ timeout: 30000 });
     log(`[${u.name}] account deleted → back at welcome`);
   }

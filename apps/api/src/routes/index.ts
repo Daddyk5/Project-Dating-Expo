@@ -25,7 +25,8 @@ import { listMatches, unmatch } from "../services/matches";
 import { listMessages, markRead, sendMessage } from "../services/messages";
 import { confirmUpload, createUploadUrl, deletePhoto, reorderPhotos } from "../services/photos";
 import * as profiles from "../services/profiles";
-import { block, report } from "../services/safety";
+import { likesYou } from "../services/likes";
+import { block, listBlocks, report, unblock } from "../services/safety";
 import { swipe, undoLastPass } from "../services/swipes";
 
 const id = z.uuid("Invalid id");
@@ -93,6 +94,12 @@ swipesRouter.post("/undo", async (req, res) => {
   res.json({ profile: await undoLastPass(userId(req)) });
 });
 
+// ---------- likes you ----------
+export const likesRouter = Router();
+likesRouter.get("/", async (req, res) => {
+  res.json({ likes: await likesYou(userId(req), parse(discoverQuerySchema, req.query).limit) });
+});
+
 // ---------- matches & messages (messages always belong to a match) ----------
 export const matchesRouter = Router();
 matchesRouter.get("/", async (req, res) => {
@@ -119,6 +126,13 @@ export const safetyRouter = Router();
 safetyRouter.post("/blocks", async (req, res) => {
   await block(userId(req), parse(blockSchema, req.body).userId);
   res.status(201).json({ ok: true });
+});
+safetyRouter.get("/blocks", async (req, res) => {
+  res.json({ blocks: await listBlocks(userId(req)) });
+});
+safetyRouter.delete("/blocks/:id", async (req, res) => {
+  await unblock(userId(req), parse(id, req.params.id));
+  res.status(204).end();
 });
 safetyRouter.post("/reports", async (req, res) => {
   const r = parse(reportSchema, req.body);

@@ -1,19 +1,20 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, View } from "react-native";
 import type { PublicProfile, SwipeAction } from "@kxq/shared";
 import { SwipeDeck, type DeckHandle } from "@/components/swipe-deck";
-import { EmptyState, ErrorText, IconButton, Screen, Skeleton, Text } from "@/components/ui";
+import { EmptyState, ErrorText, IconButton, Logo, Screen, Skeleton, Text } from "@/components/ui";
 import { api } from "@/lib/api";
 import { haptic } from "@/lib/device";
 import { keys } from "@/lib/queries";
+import { useSettings } from "@/lib/settings";
 import { radii, spacing, useTheme } from "@/theme";
 
 export default function Discover() {
   const { colors } = useTheme();
   const qc = useQueryClient();
+  const { keyboardHints } = useSettings();
   const deckRef = useRef<DeckHandle>(null);
   // The deck is derived: server candidates, minus cards swiped optimistically, plus undo-restored cards.
   const [swiped, setSwiped] = useState<ReadonlySet<string>>(() => new Set());
@@ -121,13 +122,13 @@ export default function Discover() {
   return (
     <Screen>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: spacing.sm }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.xs }}>
-          <Ionicons name="heart-circle" size={28} color={colors.primary} />
-          <Text variant="heading" accessibilityRole="header">
-            Discover
-          </Text>
+        <View accessibilityRole="header" accessibilityLabel="Discover">
+          <Logo size={30} wordmark />
         </View>
-        <IconButton icon="options-outline" label="Discovery preferences" onPress={() => router.push("/preferences")} />
+        <View style={{ flexDirection: "row", gap: spacing.sm }}>
+          <IconButton icon="diamond-outline" label="KingxQueen Royal" onPress={() => router.push("/premium")} color={colors.goldDeep} elevated diameter={40} size={20} />
+          <IconButton icon="options-outline" label="Discovery preferences" onPress={() => router.push("/preferences")} elevated diameter={40} size={20} />
+        </View>
       </View>
 
       <View style={{ flex: 1, marginBottom: spacing.md }}>
@@ -151,14 +152,14 @@ export default function Discover() {
 
       <ErrorText>{error}</ErrorText>
 
-      <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: spacing.lg, paddingBottom: spacing.md }}>
-        <IconButton icon="arrow-undo" label="Undo last pass" onPress={undo} disabled={!lastPass} color={colors.gold} background={colors.surface} diameter={48} size={22} />
-        <IconButton icon="close" label="Pass" onPress={() => deckRef.current?.swipe("pass")} disabled={!top} color={colors.pass} background={colors.surface} diameter={64} size={32} />
-        <IconButton icon="star" label="Super like" onPress={() => deckRef.current?.swipe("superlike")} disabled={!top} color={colors.superlike} background={colors.surface} diameter={52} size={24} />
-        <IconButton icon="heart" label="Like" onPress={() => deckRef.current?.swipe("like")} disabled={!top} color={colors.like} background={colors.surface} diameter={64} size={32} />
-        <IconButton icon="information-circle" label="View full profile" onPress={() => top && open(top)} disabled={!top} color={colors.textMuted} background={colors.surface} diameter={48} size={22} />
+      <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: spacing.md, paddingBottom: spacing.md }}>
+        <IconButton icon="arrow-undo" label="Undo last pass" onPress={undo} disabled={!lastPass} color={colors.goldDeep} elevated diameter={48} size={22} />
+        <IconButton icon="close" label="Pass" onPress={() => deckRef.current?.swipe("pass")} disabled={!top} color={colors.pass} elevated diameter={66} size={32} />
+        <IconButton icon="star" label="Super like" onPress={() => deckRef.current?.swipe("superlike")} disabled={!top} color={colors.superlike} elevated diameter={52} size={24} />
+        <IconButton icon="heart" label="Like" onPress={() => deckRef.current?.swipe("like")} disabled={!top} color={colors.onPrimary} background={colors.primary} elevated diameter={66} size={32} />
+        <IconButton icon="information-circle" label="View full profile" onPress={() => top && open(top)} disabled={!top} color={colors.textMuted} elevated diameter={48} size={22} />
       </View>
-      {Platform.OS === "web" && (
+      {Platform.OS === "web" && keyboardHints && (
         <Text variant="caption" muted style={{ textAlign: "center", paddingBottom: spacing.sm }}>
           Tip: use ← → ↑ on your keyboard
         </Text>
