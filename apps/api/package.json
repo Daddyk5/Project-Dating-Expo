@@ -1,0 +1,51 @@
+{
+  "name": "@kxq/api",
+  "version": "1.0.0",
+  "description": "KingxQueen backend",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/server.ts",
+    "start": "tsx src/server.ts",
+    "db:check": "node scripts/db-check.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "seed": "tsx scripts/seed.ts",
+    "seed:reset": "tsx scripts/seed.ts --reset",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.129.0",
+    "@aws-sdk/client-s3": "^3.1142.0",
+    "@aws-sdk/s3-request-presigner": "^3.1142.0",
+    "@kxq/shared": "^1.0.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.45.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "jose": "^6.2.12",
+    "morgan": "^1.10.1",
+    "socket.io": "^4.8.1",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^26.6.3",
+    "@types/supertest": "^7.2.1",
+    "@types/ws": "^8.18.1",
+    "drizzle-kit": "^0.31.11",
+    "socket.io-client": "^4.8.4",
+    "supertest": "^7.3.0",
+    "tsx": "^4.23.15",
+    "vitest": "^5.0.2"
+  }
+}

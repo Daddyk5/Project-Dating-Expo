@@ -1,9 +1,29 @@
+# Dependencies
+node_modules/
+
+# Env / secrets
 .env
-queenxking-aca48-firebase-adminsdk-fbsvc-115eabe905.json
+.env.*
+!.env.example
+.neon
+*-firebase-adminsdk-*.json
+
+# Firebase (legacy)
 firebase-debug.log
+firestore-debug.log
 .firebaserc
-.firebase.json
+firebase.json
 firestore.indexes.json
-*migrations
 firestore.rules
 cors.json
+*migrations
+
+# Expo / build output
+.expo/
+dist/
+web-build/
+*.tsbuildinfo
+coverage/
+
+# E2E output
+e2e/screenshots/
