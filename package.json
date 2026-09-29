@@ -1,37 +1,30 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "KingxQueen backend",
-  "main": "server.js",
+  "name": "kingxqueen",
+  "private": true,
   "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "migrate:up": "node src/migrate.js up",
-    "migrate:down": "node src/migrate.js down",
-    "deploy:firestore": "firebase deploy --only firestore",
-    "indexes:pull": "firebase firestore:indexes"
-  },
-  "dependencies": {
-    "@neon/config": "^1.8.2",
-    "@neon/env": "^1.4.7",
-    "@neondatabase/serverless": "^1.1.0",
-    "compression": "^1.8.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^5.1.0",
-    "express-rate-limit": "^8.0.1",
-    "firebase-admin": "^13.5.0",
-    "helmet": "^8.1.0",
-    "morgan": "^1.10.1",
-    "socket.io": "^4.8.1",
-    "uuid": "^11.1.0"
+    "dev:api": "npm run dev -w @kxq/api",
+    "dev:app": "npm run web -w @kxq/app",
+    "db:check": "npm run db:check -w @kxq/api",
+    "db:generate": "npm run db:generate -w @kxq/api",
+    "db:migrate": "npm run db:migrate -w @kxq/api",
+    "seed": "npm run seed -w @kxq/api",
+    "seed:reset": "npm run seed:reset -w @kxq/api",
+    "test": "npm run test -w @kxq/api",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
+    "@neon/config": "^1.8.2",
+    "@neon/env": "^1.4.7",
     "eslint": "^9.34.0",
-    "eslint-plugin-react": "^7.37.5",
     "globals": "^16.3.0",
-    "nodemon": "^3.1.10"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.46.0"
   }
 }
